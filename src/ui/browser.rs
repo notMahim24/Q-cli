@@ -83,9 +83,7 @@ impl BrowserState {
                 }
             }
             Panel::Scripture => {
-                if self.scripture_scroll > 0 {
-                    self.scripture_scroll -= 1;
-                }
+                self.scripture_scroll = self.scripture_scroll.saturating_sub(3);
             }
         }
     }
@@ -101,9 +99,7 @@ impl BrowserState {
                 }
             }
             Panel::Scripture => {
-                if self.scripture_scroll < self.scripture_max_scroll {
-                    self.scripture_scroll += 1;
-                }
+                self.scripture_scroll = (self.scripture_scroll + 3).min(self.scripture_max_scroll);
             }
         }
     }

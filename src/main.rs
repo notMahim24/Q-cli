@@ -12,6 +12,10 @@ use ratatui::init;
 #[command(name = "quran")]
 #[command(about = "A beautiful Quran TUI for developers", long_about = None)]
 struct Cli {
+    /// Skip the startup animation
+    #[arg(long)]
+    no_banner: bool,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
@@ -75,7 +79,7 @@ async fn main() -> std::io::Result<()> {
             println!("[Surah {} Ayah {}] {}", ayah.surah_id, ayah.id, ayah.translation);
         }
         None => {
-            let app = App::new();
+            let app = App::new(!cli.no_banner);
             let terminal = init();
             app.run(terminal).await?;
             ratatui::restore();

@@ -3,7 +3,7 @@ use crate::data::quran;
 use crate::ui::theme::{Theme, ThemeName};
 use ratatui::{
     layout::{Alignment, Constraint, Layout, Rect},
-    style::{Modifier, Style, Stylize},
+    style::{Color, Modifier, Style, Stylize},
     text::{Line, Span},
     widgets::{
         Block, BorderType, Borders, List, ListItem, ListState, Padding, Paragraph,
@@ -38,6 +38,7 @@ pub struct BrowserState {
     pub search: SearchMode,
     pub theme: ThemeName,
     pub scripture_max_scroll: u16,
+    pub last_search_query: String,
 }
 
 impl BrowserState {
@@ -55,6 +56,7 @@ impl BrowserState {
             search: SearchMode::Off,
             theme: ThemeName::default(),
             scripture_max_scroll: 0,
+            last_search_query: String::new(),
         }
     }
 
@@ -114,6 +116,7 @@ impl BrowserState {
                 let id_changed = self.current_surah.as_ref().map(|s| s.id) != Some(new_id);
                 if id_changed {
                     self.scripture_scroll = 0;
+                    self.last_search_query.clear(); // Clear highlight on new selection
                 }
                 
                 self.selected_surah_id = new_id;
@@ -134,6 +137,11 @@ impl BrowserState {
     }
 
     pub fn jump_to_result(&mut self, surah_id: u32, ayah_num: u32) {
+        // Capture query before resetting search mode
+        if let SearchMode::Active { query, .. } = &self.search {
+            self.last_search_query = query.clone();
+        }
+
         self.selected_surah_id = surah_id;
         self.surah_list.select(Some((surah_id - 1) as usize));
         
@@ -333,10 +341,32 @@ fn render_scripture_panel(frame: &mut Frame, area: Rect, state: &mut BrowserStat
         }
 
         for ayah in &surah.verses {
-            lines.push(Line::from(vec![
+            let mut spans = vec![
                 Span::styled(format!(" {} ", ayah.id), Style::default().fg(theme.primary).bold()),
-                Span::styled(&ayah.translation, Style::default().fg(theme.fg)),
-            ]));
+            ];
+
+            if !state.last_search_query.is_empty() {
+                let query = state.last_search_query.to_lowercase();
+                let text = &ayah.translation;
+                let text_lower = text.to_lowercase();
+                
+                let mut last_pos = 0;
+                for (start, _) in text_lower.match_indices(&query) {
+                    if start > last_pos {
+                        spans.push(Span::styled(&text[last_pos..start], Style::default().fg(theme.fg)));
+                    }
+                    let end = start + query.len();
+                    spans.push(Span::styled(&text[start..end], Style::default().fg(Color::Black).bg(Color::Yellow)));
+                    last_pos = end;
+                }
+                if last_pos < text.len() {
+                    spans.push(Span::styled(&text[last_pos..], Style::default().fg(theme.fg)));
+                }
+            } else {
+                spans.push(Span::styled(&ayah.translation, Style::default().fg(theme.fg)));
+            }
+
+            lines.push(Line::from(spans));
             lines.push(Line::default());
         }
         

@@ -34,7 +34,6 @@ pub struct BrowserState {
     pub scripture_scroll: u16,
     pub selected_surah_id: u32,
     pub current_surah: Option<Surah>,
-    pub loading: bool,
     pub search: SearchMode,
     pub theme: ThemeName,
     pub scripture_max_scroll: u16,
@@ -52,19 +51,11 @@ impl BrowserState {
             scripture_scroll: 0,
             selected_surah_id: 1,
             current_surah: None,
-            loading: false,
             search: SearchMode::Off,
             theme: ThemeName::default(),
             scripture_max_scroll: 0,
             last_search_query: String::new(),
         }
-    }
-
-    pub fn next_panel(&mut self) {
-        self.active_panel = match self.active_panel {
-            Panel::Surahs => Panel::Scripture,
-            Panel::Scripture => Panel::Scripture,
-        };
     }
 
     pub fn prev_panel(&mut self) {

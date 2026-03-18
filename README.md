@@ -25,7 +25,7 @@ Built with ❤️ by [Mahim](https://github.com/notMahim24)
 
 The easiest way to get started is to download the pre-built binary for your operating system:
 
-1. Go to the [Releases](https://github.com/notMahim24/quran-cli/releases) page.
+1. Go to the [Releases](https://github.com/notMahim24/Q-cli/releases) page.
 2. Download the version for your system (`windows`, `linux`, or `macos`).
 3. Extract and run the `quran` binary.
 

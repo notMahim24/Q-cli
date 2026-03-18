@@ -37,6 +37,7 @@ pub struct BrowserState {
     pub loading: bool,
     pub search: SearchMode,
     pub theme: ThemeName,
+    pub scripture_max_scroll: u16,
 }
 
 impl BrowserState {
@@ -53,6 +54,7 @@ impl BrowserState {
             loading: false,
             search: SearchMode::Off,
             theme: ThemeName::default(),
+            scripture_max_scroll: 0,
         }
     }
 
@@ -99,7 +101,9 @@ impl BrowserState {
                 }
             }
             Panel::Scripture => {
-                self.scripture_scroll += 1;
+                if self.scripture_scroll < self.scripture_max_scroll {
+                    self.scripture_scroll += 1;
+                }
             }
         }
     }
@@ -339,10 +343,23 @@ fn render_scripture_panel(frame: &mut Frame, area: Rect, state: &mut BrowserStat
             ]));
             lines.push(Line::default());
         }
+        
+        // Add decorative footer
+        lines.push(Line::default());
+        lines.push(Line::from(vec![
+            Span::styled("───────── ✧ ─────────", Style::default().fg(theme.secondary))
+        ]).alignment(Alignment::Center));
+        lines.push(Line::from(vec![
+            Span::styled("Sadaqallahul Azeem", Style::default().fg(theme.primary).italic())
+        ]).alignment(Alignment::Center));
+        lines.push(Line::default());
 
         let inner = block.inner(area);
-        let _visible_height = inner.height;
-        let _content_height = lines.len() as u16; // Simplified height calculation
+        let visible_height = inner.height;
+        let content_height = lines.len() as u16;
+        
+        // Update max scroll
+        state.scripture_max_scroll = content_height.saturating_sub(visible_height);
 
         let paragraph = Paragraph::new(lines)
             .block(block)

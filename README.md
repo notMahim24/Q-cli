@@ -4,7 +4,7 @@ A beautiful, high-performance Terminal User Interface (TUI) for reading the Qura
 
 Built with ❤️ by [Mahim](https://github.com/notMahim24)
 
-![Quran CLI Demo](assets/demo.gif)
+![Quran CLI Demo](assets/quran-animation.gif)
 
 ## ✨ Features
 

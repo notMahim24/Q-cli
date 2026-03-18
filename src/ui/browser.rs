@@ -77,6 +77,7 @@ impl BrowserState {
                 if i > 0 {
                     self.surah_list.select(Some(i - 1));
                     self.selected_surah_id = i as u32;
+                    self.scripture_scroll = 0; // Reset scroll for preview
                 }
             }
             Panel::Scripture => {
@@ -94,6 +95,7 @@ impl BrowserState {
                 if i < 113 {
                     self.surah_list.select(Some(i + 1));
                     self.selected_surah_id = (i + 2) as u32;
+                    self.scripture_scroll = 0; // Reset scroll for preview
                 }
             }
             Panel::Scripture => {
@@ -106,10 +108,17 @@ impl BrowserState {
         match self.active_panel {
             Panel::Surahs => {
                 let i = self.surah_list.selected().unwrap_or(0);
-                self.selected_surah_id = (i + 1) as u32;
-                self.scripture_scroll = 0;
+                let new_id = (i + 1) as u32;
+                
+                // Only reset scroll if we are switching to a DIFFERENT surah
+                let id_changed = self.current_surah.as_ref().map(|s| s.id) != Some(new_id);
+                if id_changed {
+                    self.scripture_scroll = 0;
+                }
+                
+                self.selected_surah_id = new_id;
                 self.active_panel = Panel::Scripture;
-                true
+                id_changed
             }
             Panel::Scripture => false,
         }
@@ -127,7 +136,10 @@ impl BrowserState {
     pub fn jump_to_result(&mut self, surah_id: u32, ayah_num: u32) {
         self.selected_surah_id = surah_id;
         self.surah_list.select(Some((surah_id - 1) as usize));
-        self.scripture_scroll = 0; // TODO: Calculate scroll to specific ayah
+        
+        // Simple estimate: each verse is approx 2 lines
+        self.scripture_scroll = (ayah_num.saturating_sub(1) * 2) as u16;
+        
         self.active_panel = Panel::Scripture;
         self.search = SearchMode::Off;
     }

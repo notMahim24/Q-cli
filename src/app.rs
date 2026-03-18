@@ -1,5 +1,5 @@
 use crate::data::quran;
-use crate::ui::browser::{self, BrowserState, Panel};
+use crate::ui::browser::{self, BrowserState};
 use crate::ui::theme;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
@@ -12,8 +12,12 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
+        let mut state = BrowserState::new();
+        // Load the first surah by default
+        state.current_surah = quran::get_surah(1).cloned();
+        
         Self {
-            state: BrowserState::new(),
+            state,
             should_quit: false,
         }
     }
@@ -95,20 +99,22 @@ impl App {
                 self.state.prev_panel();
             }
             KeyCode::Right | KeyCode::Char('l') => {
-                let changed = self.state.select_current();
-                if changed {
+                let should_load = self.state.select_current();
+                if should_load {
                     self.load_surah();
                 }
             }
             KeyCode::Up | KeyCode::Char('k') => {
                 self.state.move_up();
+                self.load_surah();
             }
             KeyCode::Down | KeyCode::Char('j') => {
                 self.state.move_down();
+                self.load_surah();
             }
             KeyCode::Enter => {
-                let changed = self.state.select_current();
-                if changed {
+                let should_load = self.state.select_current();
+                if should_load {
                     self.load_surah();
                 }
             }
